@@ -1,0 +1,7 @@
+*.env
+build/*
+bin/*
+cmd/tracker/_*
+Supfile.yml
+Taskfile.yaml
+data/*

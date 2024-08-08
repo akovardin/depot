@@ -1,0 +1,13 @@
+POST http://127.0.0.1:8081/example
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="text"
+
+title
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="billing.zip"
+Content-Type: application/zip
+
+< /Users/artem/projects/getapp/services/getapp/sdk/android/billing/build/repo/billing.zip 
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
