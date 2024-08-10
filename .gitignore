@@ -1,7 +1,8 @@
 *.env
 build/*
 bin/*
-cmd/tracker/_*
 Supfile.yml
 Taskfile.yaml
 data/*
+http/auth.http
+.vscode/settings.json

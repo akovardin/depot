@@ -12,7 +12,7 @@ func NewVersions() *Versions {
 }
 
 func (h *Versions) List(c echo.Context) error {
-	// получаем {group name}/{artifact name} и отдаем список версий
+	// список версий артефакта
 
 	return nil
 }

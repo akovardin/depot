@@ -80,6 +80,7 @@ require (
 require (
 	github.com/labstack/echo v3.3.10+incompatible
 	github.com/pocketbase/pocketbase v0.22.18
+	github.com/xyproto/unzip v0.0.0-20150601123358-823950573952
 	go.uber.org/dig v1.17.1 // indirect
 	go.uber.org/fx v1.22.1
 	go.uber.org/multierr v1.11.0 // indirect

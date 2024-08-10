@@ -1,13 +1,38 @@
-POST http://127.0.0.1:8081/example
+POST http://127.0.0.1:8081/artifacts/ru.kovardin.billing
+Authorization: {{token}}
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
 
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="text"
-
-title
 ------WebKitFormBoundary7MA4YWxkTrZu0gW
 Content-Disposition: form-data; name="file"; filename="billing.zip"
 Content-Type: application/zip
 
 < /Users/artem/projects/getapp/services/getapp/sdk/android/billing/build/repo/billing.zip 
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+
+### billing
+
+POST https://depot.kovardin.ru/artifacts/ru.kovardin.billing
+Authorization: {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="billing.zip"
+Content-Type: application/zip
+
+< /Users/artem/projects/getapp/services/getapp/sdk/android/billing/build/repo/billing.zip 
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+
+### mediation
+
+POST https://depot.kovardin.ru/artifacts/ru.kovardin.mediation
+Authorization: {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="mediation.zip"
+Content-Type: application/zip
+
+< /Users/artem/projects/getapp/services/getapp/sdk/android/mediation/build/repo/mediation.zip 
 ------WebKitFormBoundary7MA4YWxkTrZu0gW--
