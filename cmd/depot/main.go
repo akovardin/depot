@@ -55,6 +55,7 @@ func routing(
 		e.Router.GET("/artifacts/:group/:artifact", versions.List)
 
 		e.Router.GET("/packages/*", apis.StaticDirectoryHandler(os.DirFS(settings.UploadFolder("")), true))
+		e.Router.HEAD("/packages/*", apis.StaticDirectoryHandler(os.DirFS(settings.UploadFolder("")), true))
 		e.Router.GET("/static/*", func(c echo.Context) error {
 			p := c.PathParam("*")
 

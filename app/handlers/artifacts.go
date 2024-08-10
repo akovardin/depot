@@ -131,8 +131,8 @@ func (h *Artifacts) Upload(c echo.Context) error {
 
 	for _, ver := range metadata.Versioning.Versions.Version {
 		version, _ := h.app.Dao().FindFirstRecordByFilter("versions",
-			"name = {:name} && version = {:version}",
-			dbx.Params{"name": ver, "version": ver},
+			"name = {:name} && version = {:version} && artifact = {:artifact}",
+			dbx.Params{"name": metadata.ArtifactId, "version": ver, "artifact": artifact.Id},
 		)
 		if version == nil {
 			collection, err := h.app.Dao().FindCollectionByNameOrId("versions")
@@ -143,7 +143,7 @@ func (h *Artifacts) Upload(c echo.Context) error {
 			version = models.NewRecord(collection)
 		}
 
-		version.Set("name", ver)
+		version.Set("name", metadata.ArtifactId)
 		version.Set("version", ver)
 		version.Set("artifact", artifact.Id)
 		version.Set("enabled", true)
