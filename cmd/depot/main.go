@@ -50,12 +50,16 @@ func routing(
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		e.Router.GET("/", home.Home)
 
-		e.Router.POST("/artifacts/:name", artifacts.Upload, apis.RequireAdminAuth())
+		// listing
 		e.Router.GET("/artifacts/:group", artifacts.List)
 		e.Router.GET("/artifacts/:group/:artifact", versions.List)
 
+		// publication
+		e.Router.PUT("/packages/*", artifacts.Publish, apis.RequireAdminAuth())
 		e.Router.GET("/packages/*", apis.StaticDirectoryHandler(os.DirFS(settings.UploadFolder("")), true))
 		e.Router.HEAD("/packages/*", apis.StaticDirectoryHandler(os.DirFS(settings.UploadFolder("")), true))
+
+		// static
 		e.Router.GET("/static/*", func(c echo.Context) error {
 			p := c.PathParam("*")
 

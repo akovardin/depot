@@ -5,13 +5,13 @@ import (
 	"io"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/models"
-	"github.com/xyproto/unzip"
 
 	"gohome.4gophers.ru/kovardin/depot/app/settings"
 )
@@ -49,23 +49,14 @@ type VersionList struct {
 	Version []string `xml:"version"`
 }
 
-func (h *Artifacts) Upload(c echo.Context) error {
-	// ru.kovardin.billing
-	name := c.PathParam("name")
-
+func (h *Artifacts) Publish(c echo.Context) error {
 	// Upload
-	file, err := c.FormFile("file")
-	if err != nil {
-		return err
-	}
-	src, err := file.Open()
-	if err != nil {
-		return err
-	}
-	defer src.Close()
+	file := strings.Replace(c.Request().URL.Path, "/packages/", "", -1)
 
-	uploadFolder := h.settings.UploadFolder("")
-	uploadFile := path.Join(uploadFolder, file.Filename)
+	defer c.Request().Body.Close()
+
+	uploadFolder := path.Join(h.settings.UploadFolder(""), filepath.Dir(file))
+	uploadFile := path.Join(uploadFolder, filepath.Base(file))
 
 	if err := os.MkdirAll(uploadFolder, os.ModePerm); err != nil {
 		return err
@@ -75,81 +66,72 @@ func (h *Artifacts) Upload(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+
 	defer dst.Close()
 
-	if _, err = io.Copy(dst, src); err != nil {
-		return err
-	}
-
-	// Unzip
-
-	if err := unzip.Extract(uploadFile, uploadFolder); err != nil {
-		return err
-	}
-
-	if err := os.Remove(uploadFile); err != nil {
+	if _, err := io.Copy(dst, c.Request().Body); err != nil {
 		return err
 	}
 
 	// Parse
-	artifactFolder := strings.ReplaceAll(name, ".", "/")
-	metaFile := path.Join(uploadFolder, artifactFolder, "maven-metadata.xml")
-
-	data, err := os.ReadFile(metaFile)
-	if err != nil {
-		return err
-	}
-
-	metadata := Metadata{}
-	if err := xml.Unmarshal(data, &metadata); err != nil {
-		return err
-	}
-
-	// Save
-	artifact, _ := h.app.Dao().FindFirstRecordByFilter(
-		"artifacts",
-		"group = {:group} && name = {:name}",
-		dbx.Params{"group": metadata.GroupId, "name": metadata.ArtifactId},
-	)
-	if artifact == nil {
-		collection, err := h.app.Dao().FindCollectionByNameOrId("artifacts")
+	if filepath.Base(uploadFile) == "maven-metadata.xml" {
+		metaFile := uploadFile
+		data, err := os.ReadFile(metaFile)
 		if err != nil {
 			return err
 		}
 
-		artifact = models.NewRecord(collection)
-	}
+		metadata := Metadata{}
+		if err := xml.Unmarshal(data, &metadata); err != nil {
+			return err
+		}
 
-	artifact.Set("name", metadata.ArtifactId)
-	artifact.Set("group", metadata.GroupId)
-	artifact.Set("type", "android")
-	artifact.Set("enabled", true)
-
-	if err := h.app.Dao().SaveRecord(artifact); err != nil {
-		return err
-	}
-
-	for _, ver := range metadata.Versioning.Versions.Version {
-		version, _ := h.app.Dao().FindFirstRecordByFilter("versions",
-			"name = {:name} && version = {:version} && artifact = {:artifact}",
-			dbx.Params{"name": metadata.ArtifactId, "version": ver, "artifact": artifact.Id},
+		// Save
+		artifact, _ := h.app.Dao().FindFirstRecordByFilter(
+			"artifacts",
+			"group = {:group} && name = {:name}",
+			dbx.Params{"group": metadata.GroupId, "name": metadata.ArtifactId},
 		)
-		if version == nil {
-			collection, err := h.app.Dao().FindCollectionByNameOrId("versions")
+		if artifact == nil {
+			collection, err := h.app.Dao().FindCollectionByNameOrId("artifacts")
 			if err != nil {
 				return err
 			}
 
-			version = models.NewRecord(collection)
+			artifact = models.NewRecord(collection)
 		}
 
-		version.Set("name", metadata.ArtifactId)
-		version.Set("version", ver)
-		version.Set("artifact", artifact.Id)
-		version.Set("enabled", true)
+		artifact.Set("name", metadata.ArtifactId)
+		artifact.Set("group", metadata.GroupId)
+		artifact.Set("type", "android")
+		artifact.Set("enabled", true)
 
-		if err := h.app.Dao().SaveRecord(version); err != nil {
+		if err := h.app.Dao().SaveRecord(artifact); err != nil {
 			return err
+		}
+
+		for _, ver := range metadata.Versioning.Versions.Version {
+			version, _ := h.app.Dao().FindFirstRecordByFilter("versions",
+				"name = {:name} && version = {:version} && artifact = {:artifact}",
+				dbx.Params{"name": metadata.ArtifactId, "version": ver, "artifact": artifact.Id},
+			)
+			if version == nil {
+				collection, err := h.app.Dao().FindCollectionByNameOrId("versions")
+				if err != nil {
+					return err
+				}
+
+				version = models.NewRecord(collection)
+			}
+
+			version.Set("name", metadata.ArtifactId)
+			version.Set("version", ver)
+			version.Set("artifact", artifact.Id)
+			version.Set("enabled", true)
+
+			if err := h.app.Dao().SaveRecord(version); err != nil {
+				return err
+			}
 		}
 	}
 
