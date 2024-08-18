@@ -280,10 +280,11 @@ aa := []Artifact{}
 for _, record := range records {
     versions, err := h.app.Dao().FindRecordsByFilter(
         "versions",
-        "enabled = true",
+        "enabled = true && artifact = {:artifact}",
         "-created",
         1,
         0,
+        dbx.Params{"artifact": record.Id},
     )
 
     if err != nil {

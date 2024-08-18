@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v5"
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/tools/template"
@@ -47,10 +48,11 @@ func (h *Home) Home(c echo.Context) error {
 	for _, record := range records {
 		versions, err := h.app.Dao().FindRecordsByFilter(
 			"versions",
-			"enabled = true",
+			"enabled = true && artifact = {:artifact}",
 			"-created",
 			1,
 			0,
+			dbx.Params{"artifact": record.Id},
 		)
 
 		if err != nil {
